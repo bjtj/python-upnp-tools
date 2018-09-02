@@ -1,4 +1,4 @@
-from pyupnptools import SSDP, SsdpListener, NotifyType, send_msearch, UPnPControlPoint, UPnPDevice, UPnPDeviceListener, UPnPScpd, HttpServer, UPnPSoapRequest, UPnPSoapResponse
+from pyupnptools import SSDP, SsdpListener, NotifyType, send_msearch, UPnPControlPoint, UPnPDevice, UPnPDeviceListener, UPnPScpd, HttpServer, UPnPSoapRequest, UPnPSoapResponse, UPnPEventNotify
 import time
 import logging
 
@@ -117,16 +117,23 @@ def build_soap_response():
     with open('action_response.xml', 'r') as f:
         res = UPnPSoapResponse.read(f.read())
         print(res)
+
+def build_property():
+    with open('property.xml', 'r') as f:
+        notify = UPnPEventNotify.read(f.read())
+        print(notify)
+
     
             
 def main():
     # start_send_msearch()
     # build_device()
-    start_control_point()
+    # start_control_point()
     # build_scpd()
     # run_http_server()
     # build_soap_request()
     # build_soap_response()
+    build_property()
 
 if __name__ == '__main__':
     main()

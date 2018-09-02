@@ -36,8 +36,8 @@ class UPnPEventNotify(OrderedDict):
             ET.register_namespace(k, v)
 
         propertyset = ET.Element('{{{}}}propertyset'.format(ns_table['e']))
-        prop = ET.SubElement(propertyset, '{{{}}}property'.format(ns_table['e']))
         for k, v in self.items():
+            prop = ET.SubElement(propertyset, '{{{}}}property'.format(ns_table['e']))
             elem = ET.SubElement(prop, k)
             elem.text = v
         et = ET.ElementTree(propertyset)
