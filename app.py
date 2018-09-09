@@ -33,18 +33,20 @@ def start_send_msearch():
         print(item)
 
 def build_device():
-    with open('device.xml', 'r') as f:
+    with open('res/device.xml', 'r') as f:
         xml = f.read()
         device = UPnPDevice.read(xml)
         for service in device.services:
-            with open('scpd.xml', 'r') as fout:
+            with open('res/scpd.xml', 'r') as fout:
                 service.scpd = UPnPScpd.read(fout.read())
 
         print_device(device)
 
+        print(device.to_xml())
+
 
 def build_scpd():
-    with open('scpd.xml', 'r') as f:
+    with open('res/scpd.xml', 'r') as f:
         xml = f.read()
         scpd = UPnPScpd.read(xml)
 
@@ -106,7 +108,7 @@ def run_http_server():
     server.run()
 
 def build_soap_request():
-    with open('action_request.xml', 'r') as f:
+    with open('res/action_request.xml', 'r') as f:
         service_type = 'urn:schemas-upnp-org:service:ContentDirectory:1'
         action_name = 'GetSystemUpdateID'
         req = UPnPSoapRequest.read(service_type, action_name, f.read())
@@ -114,12 +116,12 @@ def build_soap_request():
 
 
 def build_soap_response():
-    with open('action_response.xml', 'r') as f:
+    with open('res/action_response.xml', 'r') as f:
         res = UPnPSoapResponse.read(f.read())
         print(res)
 
 def build_property():
-    with open('property.xml', 'r') as f:
+    with open('res/property.xml', 'r') as f:
         notify = UPnPEventNotify.read(f.read())
         print(notify)
 
@@ -127,13 +129,13 @@ def build_property():
             
 def main():
     # start_send_msearch()
-    # build_device()
+    build_device()
     # start_control_point()
     # build_scpd()
     # run_http_server()
     # build_soap_request()
     # build_soap_response()
-    build_property()
+    # build_property()
 
 if __name__ == '__main__':
     main()

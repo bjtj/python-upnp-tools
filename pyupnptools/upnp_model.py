@@ -3,11 +3,23 @@ from collections import OrderedDict
 from .upnp_xml import *
 
 class _UPnPModel(OrderedDict):
+
+    def __init__(self):
+        super(_UPnPModel, self).__init__()
+        self._key_table = {}
+
+    def org_keys(self):
+        return self._key_table.values()
+
+    def org_key(self, key):
+        return self._key_table[key.upper()]
+    
     def __getitem__(self, key):
-        return super(_UPnPModel, self).__getitem__(key.upper())[1]
+        return super(_UPnPModel, self).__getitem__(self.org_key(key))
 
     def __setitem__(self, key, value):
-        super(_UPnPModel, self).__setitem__(key.upper(), (key, value))
+        self._key_table[key.upper()] = key
+        super(_UPnPModel, self).__setitem__(key, value)
 
 
 class UPnPDevice(_UPnPModel):
@@ -37,8 +49,45 @@ class UPnPDevice(_UPnPModel):
                 return service
         return None
 
+    def all_services(self, lst=None):
+        if not lst:
+            lst = []
+
+        lst += self.services
+
+        for device in self.children:
+            device.all_services(lst)
+        
+        return lst
+
     def __str__(self):
         return '{} / {}'.format(self.udn(), self.friendlyName())
+
+    def to_xml(self):
+        from io import BytesIO
+        import xml.etree.ElementTree as ET
+        ns_table = {}
+        for k,v in ns_table.items():
+            ET.register_namespace(k, v)
+
+        device = ET.Element('device')
+        for k, v in self.items():
+            elem = ET.SubElement(device, self.org_key(k))
+            elem.text = v
+
+        serviceList = ET.SubElement(device, 'serviceList')
+        for service in self.services:
+            serviceList.append(ET.fromstring(service.to_xml()))
+            
+        if self.children:
+            deviceList = ET.SubElement(device, 'deviceList')
+            for child in self.children:
+                deviceList.append(ET.fromstring(child.to_xml()))
+        et = ET.ElementTree(device)
+        f = BytesIO()
+        et.write(f, encoding='utf-8')
+        xml = f.getvalue().decode('utf-8')
+        return xml
     
     @staticmethod
     def read(data):
@@ -93,6 +142,24 @@ class UPnPService(_UPnPModel):
 
     def __str__(self):
         return '{} / {}'.format(self.serviceId(), self.serviceType())
+
+
+    def to_xml(self):
+        from io import BytesIO
+        import xml.etree.ElementTree as ET
+        ns_table = {}
+        for k,v in ns_table.items():
+            ET.register_namespace(k, v)
+
+        service = ET.Element('service')
+        for k, v in self.items():
+            elem = ET.SubElement(service, self.org_key(k))
+            elem.text = v
+        et = ET.ElementTree(service)
+        f = BytesIO()
+        et.write(f, encoding='utf-8')
+        xml = f.getvalue().decode('utf-8')
+        return xml
     
     @staticmethod
     def read_xml_node(node):
